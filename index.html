@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MusicEvents.gr</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f8f8f8;
+      color: #333;
+    }
+    header {
+      padding: 2rem;
+      background: white;
+      border-bottom: 1px solid #ddd;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #669999;
+      display: inline-block;
+      margin: 0;
+    }
+    .subtitle {
+      font-size: 1rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+    .search {
+      float: right;
+      margin-top: 10px;
+    }
+    section {
+      margin: 2rem;
+    }
+    h2 {
+      font-size: 1.5rem;
+      color: #444;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 0.3rem;
+    }
+    .event {
+      background: white;
+      margin: 1rem 0;
+      padding: 1rem;
+      border-left: 5px solid #669999;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .date {
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    .location {
+      background: #dbe6e6;
+      padding: 0.5rem;
+      display: inline-block;
+      margin-top: 0.5rem;
+      font-weight: bold;
+    }
+    .details {
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>MusicEvents.gr</h1>
+    <div class="subtitle">experimental, contemporary, avantgarde, creative, improvised Music events in Greece</div>
+    <input class="search" type="text" placeholder="Search artist or event" />
+  </header>
+
+  <section>
+    <h2>Τρέχοντα Events</h2>
+    <div id="upcoming"></div>
+  </section>
+
+  <section>
+    <h2>Παλαιότερα Events</h2>
+    <div id="past"></div>
+  </section>
+
+  <script>
+    // Παράδειγμα αρχείου: events.txt
+    // [2025-04-01 19:30] Πλατεία Πατάτας\nΠεριγραφή\nΚαλλιτέχνες\n\n[2025-03-28 20:00] Αυλή Κραυγής\n...
+
+    fetch('events.txt')
+      .then(res => res.text())
+      .then(text => {
+        const now = new Date();
+        const blocks = text.trim().split(/\n\s*\n/);
+
+        blocks.forEach(block => {
+          const lines = block.trim().split('\n');
+          const firstLine = lines.shift();
+          const match = firstLine.match(/^\[(.*?)\]\s+(.*)$/);
+          if (!match) return;
+
+          const datetime = new Date(match[1].replace(' ', 'T'));
+          const location = match[2];
+          const content = lines.map(line => `<p>${line}</p>`).join('');
+
+          const dateStr = datetime.toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+          const timeStr = datetime.toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' });
+
+          const container = document.createElement('div');
+          container.className = 'event';
+          container.innerHTML = `
+            <div class="date">${dateStr} — ${timeStr}</div>
+            <div class="location">${location}</div>
+            <div class="details">${content}</div>
+          `;
+
+          if (datetime >= now) {
+            document.getElementById('upcoming').appendChild(container);
+          } else {
+            document.getElementById('past').appendChild(container);
+          }
+        });
+      });
+  </script>
+
+</body>
+</html>
